@@ -5,11 +5,11 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"src/src/domains"
+	"src/src/shared/domain"
 )
 
 func main() {
-	money := domains.NewMoneyObject(decimal.NewFromFloat(100.0), "USD")
+	money := domain.NewMoneyObject(decimal.NewFromFloat(100.0), "USD")
 
 	a := decimal.NewFromFloat(0.1)
 	b := decimal.NewFromFloat(0.2)

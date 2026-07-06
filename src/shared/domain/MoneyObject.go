@@ -1,4 +1,4 @@
-package domains
+package domain
 
 import (
 	"fmt"
@@ -18,7 +18,15 @@ func NewMoneyObject(amount decimal.Decimal, currency string) MoneyObject {
 	}
 }
 
-func (m *MoneyObject) Add(other MoneyObject) (MoneyObject, error) {
+func (m MoneyObject) Currency() string {
+	return m.currency
+}
+
+func (m MoneyObject) Amount() decimal.Decimal {
+	return m.amount
+}
+
+func (m MoneyObject) Add(other MoneyObject) (MoneyObject, error) {
 	if m.currency != other.currency {
 		return MoneyObject{}, fmt.Errorf("currency mismatch")
 	}
@@ -29,7 +37,7 @@ func (m *MoneyObject) Add(other MoneyObject) (MoneyObject, error) {
 	}, nil
 }
 
-func (m *MoneyObject) Sub(other MoneyObject) (MoneyObject, error) {
+func (m MoneyObject) Sub(other MoneyObject) (MoneyObject, error) {
 	if m.currency != other.currency {
 		return MoneyObject{}, fmt.Errorf("currency mismatch")
 	}
@@ -39,7 +47,7 @@ func (m *MoneyObject) Sub(other MoneyObject) (MoneyObject, error) {
 		currency: m.currency,
 	}, nil
 }
-func (m *MoneyObject) LessThan(other MoneyObject) (bool, error) {
+func (m MoneyObject) LessThan(other MoneyObject) (bool, error) {
 	if m.currency != other.currency {
 		return false, fmt.Errorf("currency mismatch")
 	}
@@ -47,7 +55,7 @@ func (m *MoneyObject) LessThan(other MoneyObject) (bool, error) {
 	return m.amount.LessThan(other.amount), nil
 }
 
-func (m *MoneyObject) GreaterThan(other MoneyObject) (bool, error) {
+func (m MoneyObject) GreaterThan(other MoneyObject) (bool, error) {
 	if m.currency != other.currency {
 		return false, fmt.Errorf("currency mismatch")
 	}
@@ -55,14 +63,14 @@ func (m *MoneyObject) GreaterThan(other MoneyObject) (bool, error) {
 	return m.amount.GreaterThan(other.amount), nil
 }
 
-func (m *MoneyObject) Equal(other MoneyObject) (bool, error) {
+func (m MoneyObject) Equal(other MoneyObject) (bool, error) {
 	if m.currency != other.currency {
 		return false, fmt.Errorf("currency mismatch")
 	}
 
 	return m.amount.Equal(other.amount), nil
 }
-func (m *MoneyObject) LessThanOrEqual(other MoneyObject) (bool, error) {
+func (m MoneyObject) LessThanOrEqual(other MoneyObject) (bool, error) {
 	if m.currency != other.currency {
 		return false, fmt.Errorf("currency mismatch")
 	}
@@ -70,7 +78,7 @@ func (m *MoneyObject) LessThanOrEqual(other MoneyObject) (bool, error) {
 	return m.amount.LessThanOrEqual(other.amount), nil
 }
 
-func (m *MoneyObject) GreaterThanOrEqual(other MoneyObject) (bool, error) {
+func (m MoneyObject) GreaterThanOrEqual(other MoneyObject) (bool, error) {
 	if m.currency != other.currency {
 		return false, fmt.Errorf("currency mismatch")
 	}
