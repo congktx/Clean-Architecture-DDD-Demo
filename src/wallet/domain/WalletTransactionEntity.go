@@ -32,3 +32,27 @@ func NewWalletTransaction(typ TransactionType, amount shared.MoneyObject, catego
 		description: description,
 	}
 }
+
+func (t *WalletTransactionEntity) ID() string {
+	return t.id
+}
+
+func (t *WalletTransactionEntity) Type() TransactionType {
+	return t.typ
+}
+
+func (t *WalletTransactionEntity) Amount() shared.MoneyObject {
+	return t.amount
+}
+
+func (t *WalletTransactionEntity) CategoryID() string {
+	return t.categoryId
+}
+
+func (t *WalletTransactionEntity) Timestamp() int64 {
+	return t.timestamp
+}
+
+func (t *WalletTransactionEntity) Description() string {
+	return t.description
+}

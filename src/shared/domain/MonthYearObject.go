@@ -31,3 +31,11 @@ func (m MonthYearObject) isPast() bool {
 func (m MonthYearObject) isFuture() bool {
 	return false
 }
+
+func (m MonthYearObject) Month() int {
+	return m.month
+}
+
+func (m MonthYearObject) Year() int {
+	return m.year
+}

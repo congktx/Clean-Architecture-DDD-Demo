@@ -1,4 +1,4 @@
-package aggregate
+package domain
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ func NewBudget(ownerId string, period shared.MonthYearObject, totalLimit shared.
 	}
 }
 
-func (b *BudgetEntity) allocateFunds(categoryId string, amount shared.MoneyObject) error {
+func (b *BudgetEntity) AllocateFunds(categoryId string, amount shared.MoneyObject) error {
 	if b.totalLimit.Currency() != amount.Currency() {
 		return fmt.Errorf("currency mismatch")
 	}
@@ -58,7 +58,7 @@ func (b *BudgetEntity) allocateFunds(categoryId string, amount shared.MoneyObjec
 
 	for i := range b.budgetItems {
 		if b.budgetItems[i].categoryId == categoryId {
-			err = b.budgetItems[i].addAllocation(amount)
+			err = b.budgetItems[i].AddAllocation(amount)
 			if err == nil {
 				b.AddDomainEvent(NewFundsAllocatedEvent(b.id, categoryId, amount))
 			}
@@ -73,7 +73,7 @@ func (b *BudgetEntity) allocateFunds(categoryId string, amount shared.MoneyObjec
 	return nil
 }
 
-func (b *BudgetEntity) rebalance(fromCategoryId string, toCategoryId string, amount shared.MoneyObject) error {
+func (b *BudgetEntity) Rebalance(fromCategoryId string, toCategoryId string, amount shared.MoneyObject) error {
 	if b.totalLimit.Currency() != amount.Currency() {
 		return fmt.Errorf("currency mismatch")
 	}
@@ -94,14 +94,14 @@ func (b *BudgetEntity) rebalance(fromCategoryId string, toCategoryId string, amo
 		return fmt.Errorf("one or both categories not found")
 	}
 
-	if err := fromItem.reduceAllocation(amount); err != nil {
+	if err := fromItem.ReduceAllocation(amount); err != nil {
 		return err
 	}
 
-	return toItem.addAllocation(amount)
+	return toItem.AddAllocation(amount)
 }
 
-func (b *BudgetEntity) recordExpense(categoryId string, amount shared.MoneyObject) error {
+func (b *BudgetEntity) RecordExpense(categoryId string, amount shared.MoneyObject) error {
 	if b.totalLimit.Currency() != amount.Currency() {
 		return fmt.Errorf("currency mismatch")
 	}
@@ -116,10 +116,10 @@ func (b *BudgetEntity) recordExpense(categoryId string, amount shared.MoneyObjec
 	}
 
 	if buggetItem != nil {
-		if err := buggetItem.recordExpense(amount); err != nil {
+		if err := buggetItem.RecordExpense(amount); err != nil {
 			return err
 		}
-		if buggetItem.isOverspent() {
+		if buggetItem.IsOverspent() {
 			b.AddDomainEvent(NewBudgetOverspentEvent(b.id, categoryId))
 			return fmt.Errorf("category %s is overspent", categoryId)
 		}
@@ -127,4 +127,34 @@ func (b *BudgetEntity) recordExpense(categoryId string, amount shared.MoneyObjec
 	}
 
 	return fmt.Errorf("category not found")
+}
+
+func LoadBudget(id, ownerId string, period shared.MonthYearObject, totalLimit shared.MoneyObject, items []BudgetItemEntity) BudgetEntity {
+	return BudgetEntity{
+		id:          id,
+		ownerId:     ownerId,
+		period:      period,
+		totalLimit:  totalLimit,
+		budgetItems: items,
+	}
+}
+
+func (b *BudgetEntity) ID() string {
+	return b.id
+}
+
+func (b *BudgetEntity) OwnerID() string {
+	return b.ownerId
+}
+
+func (b *BudgetEntity) Period() shared.MonthYearObject {
+	return b.period
+}
+
+func (b *BudgetEntity) TotalLimit() shared.MoneyObject {
+	return b.totalLimit
+}
+
+func (b *BudgetEntity) BudgetItems() []BudgetItemEntity {
+	return b.budgetItems
 }

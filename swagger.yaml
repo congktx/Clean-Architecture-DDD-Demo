@@ -1,0 +1,183 @@
+openapi: 3.0.3
+info:
+  title: Clean Architecture DDD Demo API
+  description: API documentation for the Wallet and Budget management server.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /wallets:
+    post:
+      summary: Tạo ví mới
+      description: API dùng để khởi tạo một ví tiền mới cho người dùng.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - owner_id
+                - name
+                - currency
+              properties:
+                owner_id:
+                  type: string
+                  description: ID của người dùng sở hữu ví này.
+                  example: "user-123"
+                name:
+                  type: string
+                  description: Tên hiển thị của ví (VD Cơ bản, Tiết kiệm).
+                  example: "Ví chính"
+                currency:
+                  type: string
+                  description: Mã tiền tệ chuẩn (VD USD, VND).
+                  example: "VND"
+      responses:
+        '201':
+          description: Tạo ví thành công.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /wallets/expenses:
+    post:
+      summary: Ghi nhận chi tiêu
+      description: API dùng để trừ tiền trong ví thông qua việc ghi nhận một khoản chi tiêu.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - wallet_id
+                - category_id
+                - amount
+                - currency
+              properties:
+                wallet_id:
+                  type: string
+                  description: ID của ví cần trừ tiền.
+                  example: "wallet-456"
+                category_id:
+                  type: string
+                  description: ID của danh mục chi tiêu (VD Ăn uống, Mua sắm).
+                  example: "food-789"
+                amount:
+                  type: string
+                  description: Số tiền đã chi tiêu (dạng chuỗi để giữ độ chính xác thập phân).
+                  example: "50000"
+                currency:
+                  type: string
+                  description: Mã tiền tệ của khoản chi tiêu.
+                  example: "VND"
+                description:
+                  type: string
+                  description: Ghi chú ngắn về khoản chi tiêu.
+                  example: "Ăn trưa"
+      responses:
+        '200':
+          description: Ghi nhận chi tiêu thành công.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /budgets:
+    post:
+      summary: Tạo ngân sách mới
+      description: API dùng để thiết lập ngân sách tổng cho một tháng/năm cụ thể.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - owner_id
+                - month
+                - year
+                - total_limit
+                - currency
+              properties:
+                owner_id:
+                  type: string
+                  description: ID của người dùng sở hữu ngân sách.
+                  example: "user-123"
+                month:
+                  type: integer
+                  description: Tháng áp dụng ngân sách (1-12).
+                  example: 7
+                year:
+                  type: integer
+                  description: Năm áp dụng ngân sách.
+                  example: 2026
+                total_limit:
+                  type: string
+                  description: Tổng số tiền giới hạn cho tháng này (dạng chuỗi).
+                  example: "10000000"
+                currency:
+                  type: string
+                  description: Mã tiền tệ.
+                  example: "VND"
+      responses:
+        '201':
+          description: Tạo ngân sách thành công.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /budgets/allocations:
+    post:
+      summary: Phân bổ ngân sách
+      description: API dùng để trích một phần tiền từ ngân sách tổng đưa vào một hạng mục con (category) cụ thể.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - budget_id
+                - category_id
+                - amount
+                - currency
+              properties:
+                budget_id:
+                  type: string
+                  description: ID của ngân sách tổng.
+                  example: "budget-101"
+                category_id:
+                  type: string
+                  description: ID của danh mục cần cấp phát quỹ (VD Đi lại, Mua sắm).
+                  example: "transport-202"
+                amount:
+                  type: string
+                  description: Số tiền muốn cấp phát cho danh mục này.
+                  example: "2000000"
+                currency:
+                  type: string
+                  description: Mã tiền tệ của khoản tiền.
+                  example: "VND"
+      responses:
+        '200':
+          description: Phân bổ thành công.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+components:
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Thông báo trả về từ server.
+          example: "Action completed successfully"

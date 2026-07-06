@@ -36,7 +36,7 @@ func NewWallet(ownerId string, name string, balance shared.MoneyObject) WalletEn
 	}
 }
 
-func (w *WalletEntity) recordExpense(amount shared.MoneyObject, categoryId string, timestamp int64, description string) error {
+func (w *WalletEntity) RecordExpense(amount shared.MoneyObject, categoryId string, timestamp int64, description string) error {
 	if w.balance.Currency() != amount.Currency() {
 		return fmt.Errorf("currency mismatch")
 	}
@@ -74,7 +74,7 @@ func (w *WalletEntity) recordExpense(amount shared.MoneyObject, categoryId strin
 	return nil
 }
 
-func (w *WalletEntity) recordIncome(amount shared.MoneyObject, categoryId string, timestamp int64, description string) error {
+func (w *WalletEntity) RecordIncome(amount shared.MoneyObject, categoryId string, timestamp int64, description string) error {
 	if w.balance.Currency() != amount.Currency() {
 		return fmt.Errorf("currency mismatch")
 	}
@@ -108,6 +108,42 @@ func (w *WalletEntity) recordIncome(amount shared.MoneyObject, categoryId string
 	return nil
 }
 
-func (w *WalletEntity) clearRecentTransactions() {
+func (w *WalletEntity) ClearRecentTransactions() {
 	w.recentTransactions = []WalletTransactionEntity{}
+}
+
+func (w *WalletEntity) ID() string {
+	return w.id
+}
+
+func (w *WalletEntity) OwnerID() string {
+	return w.ownerId
+}
+
+func (w *WalletEntity) Name() string {
+	return w.name
+}
+
+func (w *WalletEntity) Status() WalletStatus {
+	return w.status
+}
+
+func (w *WalletEntity) Balance() shared.MoneyObject {
+	return w.balance
+}
+
+func (w *WalletEntity) RecentTransactions() []WalletTransactionEntity {
+	return w.recentTransactions
+}
+
+// LoadWallet rehydrates a wallet from persistence
+func LoadWallet(id string, ownerId string, name string, status WalletStatus, balance shared.MoneyObject) WalletEntity {
+	return WalletEntity{
+		id:                 id,
+		ownerId:            ownerId,
+		name:               name,
+		status:             status,
+		balance:            balance,
+		recentTransactions: []WalletTransactionEntity{},
+	}
 }
