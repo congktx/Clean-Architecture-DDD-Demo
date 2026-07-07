@@ -3,9 +3,10 @@ package domain
 import (
 	"fmt"
 
+	shared "src/src/shared/domain"
+
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-	shared "src/src/shared/domain"
 )
 
 type WalletStatus string
@@ -136,7 +137,6 @@ func (w *WalletEntity) RecentTransactions() []WalletTransactionEntity {
 	return w.recentTransactions
 }
 
-// LoadWallet rehydrates a wallet from persistence
 func LoadWallet(id string, ownerId string, name string, status WalletStatus, balance shared.MoneyObject) WalletEntity {
 	return WalletEntity{
 		id:                 id,

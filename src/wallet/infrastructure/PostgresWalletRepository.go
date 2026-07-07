@@ -76,7 +76,7 @@ func (r *PostgresWalletRepository) FindByID(id string) (*domain.WalletEntity, er
 	err := r.db.QueryRow(query, id).Scan(&ownerID, &name, &statusStr, &balAmountStr, &balCurrency)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil // Not found
+			return nil, nil
 		}
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func (r *PostgresWalletRepository) FindByID(id string) (*domain.WalletEntity, er
 	balAmount, _ := decimal.NewFromString(balAmountStr)
 	balance := shared.NewMoneyObject(balAmount, balCurrency)
 	status := domain.WalletStatus(statusStr)
-	
+
 	wallet := domain.LoadWallet(id, ownerID, name, status, balance)
 	return &wallet, nil
 }

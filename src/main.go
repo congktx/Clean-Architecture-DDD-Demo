@@ -66,13 +66,14 @@ func main() {
 
 	mux.HandleFunc("/wallets", walletHandler.CreateWallet)
 	mux.HandleFunc("/wallets/expenses", walletHandler.RecordExpense)
+	mux.HandleFunc("/wallets/incomes", walletHandler.RecordIncome)
 
 	mux.HandleFunc("/budgets", budgetHandler.CreateBudget)
 	mux.HandleFunc("/budgets/allocations", budgetHandler.AllocateFunds)
+	mux.HandleFunc("/budgets/rebalance", budgetHandler.Rebalance)
+	mux.HandleFunc("/budgets/expenses", budgetHandler.RecordExpense)
 
-	// Swagger UI Endpoints
 	mux.HandleFunc("/swagger.yaml", func(w http.ResponseWriter, r *http.Request) {
-		// Serve from root if run from root, or ../ if run from src/
 		if _, err := os.Stat("swagger.yaml"); err == nil {
 			http.ServeFile(w, r, "swagger.yaml")
 		} else {

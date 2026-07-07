@@ -10,6 +10,8 @@ import (
 type BudgetUsecase interface {
 	CreateBudget(req CreateBudgetRequest) error
 	AllocateFunds(req AllocateFundsRequest) error
+	Rebalance(req RebalanceRequest) error
+	RecordExpense(req RecordBudgetExpenseRequest) error
 }
 
 type budgetUsecaseImpl struct {
@@ -77,6 +79,83 @@ func (u *budgetUsecaseImpl) AllocateFunds(req AllocateFundsRequest) error {
 	err = budget.AllocateFunds(req.CategoryID, amount)
 	if err != nil {
 		return fmt.Errorf("failed to allocate funds: %w", err)
+	}
+
+	err = u.repo.Save(budget)
+	if err != nil {
+		return fmt.Errorf("failed to save budget: %w", err)
+	}
+
+	events := budget.GetDomainEvents()
+	if len(events) > 0 {
+		if err := u.dispatcher.Dispatch(events); err != nil {
+			return fmt.Errorf("failed to dispatch events: %w", err)
+		}
+		budget.ClearDomainEvents()
+	}
+
+	return nil
+}
+
+type RebalanceRequest struct {
+	BudgetID       string
+	FromCategoryID string
+	ToCategoryID   string
+	Amount         decimal.Decimal
+	Currency       string
+}
+
+func (u *budgetUsecaseImpl) Rebalance(req RebalanceRequest) error {
+	budget, err := u.repo.FindByID(req.BudgetID)
+	if err != nil {
+		return fmt.Errorf("failed to find budget: %w", err)
+	}
+	if budget == nil {
+		return fmt.Errorf("budget not found")
+	}
+
+	amount := shared.NewMoneyObject(req.Amount, req.Currency)
+	err = budget.Rebalance(req.FromCategoryID, req.ToCategoryID, amount)
+	if err != nil {
+		return fmt.Errorf("failed to rebalance: %w", err)
+	}
+
+	err = u.repo.Save(budget)
+	if err != nil {
+		return fmt.Errorf("failed to save budget: %w", err)
+	}
+
+	events := budget.GetDomainEvents()
+	if len(events) > 0 {
+		if err := u.dispatcher.Dispatch(events); err != nil {
+			return fmt.Errorf("failed to dispatch events: %w", err)
+		}
+		budget.ClearDomainEvents()
+	}
+
+	return nil
+}
+
+type RecordBudgetExpenseRequest struct {
+	BudgetID   string
+	CategoryID string
+	Amount     decimal.Decimal
+	Currency   string
+}
+
+func (u *budgetUsecaseImpl) RecordExpense(req RecordBudgetExpenseRequest) error {
+	budget, err := u.repo.FindByID(req.BudgetID)
+	if err != nil {
+		return fmt.Errorf("failed to find budget: %w", err)
+	}
+	if budget == nil {
+		return fmt.Errorf("budget not found")
+	}
+
+	amount := shared.NewMoneyObject(req.Amount, req.Currency)
+	err = budget.RecordExpense(req.CategoryID, amount)
+	if err != nil {
+		return fmt.Errorf("failed to record expense: %w", err)
 	}
 
 	err = u.repo.Save(budget)

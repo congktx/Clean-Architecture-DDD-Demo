@@ -87,6 +87,50 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
 
+  /wallets/incomes:
+    post:
+      summary: Ghi nhận thu nhập
+      description: API dùng để cộng tiền vào ví thông qua việc ghi nhận một khoản thu nhập.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - wallet_id
+                - category_id
+                - amount
+                - currency
+              properties:
+                wallet_id:
+                  type: string
+                  description: ID của ví cần cộng tiền.
+                  example: "wallet-456"
+                category_id:
+                  type: string
+                  description: ID của danh mục thu nhập (VD Lương, Thưởng).
+                  example: "salary-001"
+                amount:
+                  type: string
+                  description: Số tiền thu nhập.
+                  example: "5000000"
+                currency:
+                  type: string
+                  description: Mã tiền tệ của khoản thu nhập.
+                  example: "VND"
+                description:
+                  type: string
+                  description: Ghi chú ngắn về khoản thu nhập.
+                  example: "Lương tháng"
+      responses:
+        '200':
+          description: Ghi nhận thu nhập thành công.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+                
   /budgets:
     post:
       summary: Tạo ngân sách mới
@@ -167,6 +211,91 @@ paths:
       responses:
         '200':
           description: Phân bổ thành công.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /budgets/rebalance:
+    post:
+      summary: Tái cân bằng ngân sách
+      description: Tái cân bằng lại các hạn mức con trong ngân sách.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - budget_id
+                - from_category_id
+                - to_category_id
+                - amount
+                - currency
+              properties:
+                budget_id:
+                  type: string
+                  description: ID của ngân sách tổng.
+                  example: "budget-101"
+                from_category_id:
+                  type: string
+                  description: ID của hạng mục muốn rút tiền.
+                  example: "category-A"
+                to_category_id:
+                  type: string
+                  description: ID của hạng mục muốn nhận tiền.
+                  example: "category-B"
+                amount:
+                  type: string
+                  description: Số tiền tái cân bằng.
+                  example: "500000"
+                currency:
+                  type: string
+                  description: Mã tiền tệ.
+                  example: "VND"
+      responses:
+        '200':
+          description: Tái cân bằng thành công.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /budgets/expenses:
+    post:
+      summary: Ghi nhận chi tiêu cho ngân sách
+      description: Ghi nhận số tiền đã tiêu vào một hạng mục thuộc ngân sách tổng.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - budget_id
+                - category_id
+                - amount
+                - currency
+              properties:
+                budget_id:
+                  type: string
+                  description: ID của ngân sách tổng.
+                  example: "budget-101"
+                category_id:
+                  type: string
+                  description: ID của danh mục chi tiêu.
+                  example: "food-789"
+                amount:
+                  type: string
+                  description: Số tiền đã chi.
+                  example: "50000"
+                currency:
+                  type: string
+                  description: Mã tiền tệ.
+                  example: "VND"
+      responses:
+        '200':
+          description: Ghi nhận thành công.
           content:
             application/json:
               schema:
