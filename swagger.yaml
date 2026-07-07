@@ -41,7 +41,43 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                $ref: '#/components/schemas/WalletSuccessResponse'
+    get:
+      summary: Lấy danh sách ví theo người dùng
+      description: Lấy danh sách tất cả các ví của một người dùng.
+      parameters:
+        - in: query
+          name: owner_id
+          required: true
+          schema:
+            type: string
+          description: ID của người dùng sở hữu ví
+      responses:
+        '200':
+          description: Lấy danh sách ví thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletsSuccessResponse'
+
+  /wallets/{id}:
+    get:
+      summary: Lấy thông tin ví
+      description: Lấy thông tin chi tiết của một ví.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID của ví
+      responses:
+        '200':
+          description: Lấy thông tin ví thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletSuccessResponse'
 
   /wallets/expenses:
     post:
@@ -85,7 +121,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                $ref: '#/components/schemas/WalletSuccessResponse'
 
   /wallets/incomes:
     post:
@@ -129,7 +165,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                $ref: '#/components/schemas/WalletSuccessResponse'
                 
   /budgets:
     post:
@@ -174,7 +210,43 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                $ref: '#/components/schemas/BudgetSuccessResponse'
+    get:
+      summary: Lấy danh sách ngân sách theo người dùng
+      description: Lấy danh sách tất cả ngân sách của một người dùng.
+      parameters:
+        - in: query
+          name: owner_id
+          required: true
+          schema:
+            type: string
+          description: ID của người dùng sở hữu ngân sách
+      responses:
+        '200':
+          description: Lấy danh sách ngân sách thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetsSuccessResponse'
+
+  /budgets/{id}:
+    get:
+      summary: Lấy thông tin ngân sách
+      description: Lấy thông tin chi tiết của một ngân sách.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID của ngân sách
+      responses:
+        '200':
+          description: Lấy thông tin ngân sách thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetSuccessResponse'
 
   /budgets/allocations:
     post:
@@ -214,7 +286,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                $ref: '#/components/schemas/BudgetSuccessResponse'
 
   /budgets/rebalance:
     post:
@@ -259,7 +331,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                $ref: '#/components/schemas/BudgetSuccessResponse'
 
   /budgets/expenses:
     post:
@@ -299,14 +371,92 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                $ref: '#/components/schemas/BudgetSuccessResponse'
 
 components:
   schemas:
-    SuccessResponse:
+    Wallet:
+      type: object
+      properties:
+        id:
+          type: string
+        owner_id:
+          type: string
+        name:
+          type: string
+        balance:
+          type: string
+        currency:
+          type: string
+        status:
+          type: string
+
+    WalletSuccessResponse:
       type: object
       properties:
         message:
           type: string
-          description: Thông báo trả về từ server.
-          example: "Action completed successfully"
+        data:
+          $ref: '#/components/schemas/Wallet'
+
+    WalletsSuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Wallet'
+
+    BudgetItem:
+      type: object
+      properties:
+        id:
+          type: string
+        category_id:
+          type: string
+        allocated_amount:
+          type: string
+        spent_amount:
+          type: string
+        currency:
+          type: string
+
+    Budget:
+      type: object
+      properties:
+        id:
+          type: string
+        owner_id:
+          type: string
+        month:
+          type: integer
+        year:
+          type: integer
+        total_limit:
+          type: string
+        currency:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BudgetItem'
+
+    BudgetSuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/Budget'
+
+    BudgetsSuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Budget'

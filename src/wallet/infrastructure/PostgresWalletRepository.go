@@ -88,3 +88,35 @@ func (r *PostgresWalletRepository) FindByID(id string) (*domain.WalletEntity, er
 	wallet := domain.LoadWallet(id, ownerID, name, status, balance)
 	return &wallet, nil
 }
+
+func (r *PostgresWalletRepository) FindByOwnerID(ownerId string) ([]*domain.WalletEntity, error) {
+	query := `SELECT id, name, status, balance_amount, balance_currency FROM wallets WHERE owner_id = $1`
+	rows, err := r.db.Query(query, ownerId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var wallets []*domain.WalletEntity
+	for rows.Next() {
+		var id, name, statusStr, balCurrency string
+		var balAmountStr string
+
+		if err := rows.Scan(&id, &name, &statusStr, &balAmountStr, &balCurrency); err != nil {
+			return nil, err
+		}
+
+		balAmount, _ := decimal.NewFromString(balAmountStr)
+		balance := shared.NewMoneyObject(balAmount, balCurrency)
+		status := domain.WalletStatus(statusStr)
+
+		wallet := domain.LoadWallet(id, ownerId, name, status, balance)
+		wallets = append(wallets, &wallet)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return wallets, nil
+}

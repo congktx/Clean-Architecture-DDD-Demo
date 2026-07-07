@@ -64,14 +64,18 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/wallets", walletHandler.CreateWallet)
-	mux.HandleFunc("/wallets/expenses", walletHandler.RecordExpense)
-	mux.HandleFunc("/wallets/incomes", walletHandler.RecordIncome)
+	mux.HandleFunc("POST /wallets", walletHandler.CreateWallet)
+	mux.HandleFunc("POST /wallets/expenses", walletHandler.RecordExpense)
+	mux.HandleFunc("POST /wallets/incomes", walletHandler.RecordIncome)
+	mux.HandleFunc("GET /wallets", walletHandler.GetWallets)
+	mux.HandleFunc("GET /wallets/{id}", walletHandler.GetWallet)
 
-	mux.HandleFunc("/budgets", budgetHandler.CreateBudget)
-	mux.HandleFunc("/budgets/allocations", budgetHandler.AllocateFunds)
-	mux.HandleFunc("/budgets/rebalance", budgetHandler.Rebalance)
-	mux.HandleFunc("/budgets/expenses", budgetHandler.RecordExpense)
+	mux.HandleFunc("POST /budgets", budgetHandler.CreateBudget)
+	mux.HandleFunc("POST /budgets/allocations", budgetHandler.AllocateFunds)
+	mux.HandleFunc("POST /budgets/rebalance", budgetHandler.Rebalance)
+	mux.HandleFunc("POST /budgets/expenses", budgetHandler.RecordExpense)
+	mux.HandleFunc("GET /budgets", budgetHandler.GetBudgets)
+	mux.HandleFunc("GET /budgets/{id}", budgetHandler.GetBudget)
 
 	mux.HandleFunc("/swagger.yaml", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := os.Stat("swagger.yaml"); err == nil {

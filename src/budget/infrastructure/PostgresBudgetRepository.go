@@ -111,3 +111,64 @@ func (r *PostgresBudgetRepository) FindByID(id string) (*domain.BudgetEntity, er
 	budget := domain.LoadBudget(id, ownerID, period, totalLimit, items)
 	return &budget, nil
 }
+
+func (r *PostgresBudgetRepository) FindByOwnerID(ownerId string) ([]*domain.BudgetEntity, error) {
+	query := `SELECT id, month, year, total_limit_amount, total_limit_currency FROM budgets WHERE owner_id = $1`
+	rows, err := r.db.Query(query, ownerId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var budgets []*domain.BudgetEntity
+	for rows.Next() {
+		var id, limitCurrency string
+		var month, year int
+		var limitAmountStr string
+
+		if err := rows.Scan(&id, &month, &year, &limitAmountStr, &limitCurrency); err != nil {
+			return nil, err
+		}
+
+		period, _ := shared.NewMonthYear(month, year)
+		limitAmount, _ := decimal.NewFromString(limitAmountStr)
+		totalLimit := shared.NewMoneyObject(limitAmount, limitCurrency)
+
+		itemQuery := `SELECT id, category_id, allocated_amount, spent_amount, currency FROM budget_items WHERE budget_id = $1`
+		itemRows, err := r.db.Query(itemQuery, id)
+		if err != nil {
+			return nil, err
+		}
+		
+		var items []domain.BudgetItemEntity
+		for itemRows.Next() {
+			var itemID, catID, allocStr, spentStr, currency string
+			if err := itemRows.Scan(&itemID, &catID, &allocStr, &spentStr, &currency); err != nil {
+				itemRows.Close()
+				return nil, err
+			}
+			allocAmt, _ := decimal.NewFromString(allocStr)
+			spentAmt, _ := decimal.NewFromString(spentStr)
+			
+			allocMoney := shared.NewMoneyObject(allocAmt, currency)
+			spentMoney := shared.NewMoneyObject(spentAmt, currency)
+			
+			item := domain.LoadBudgetItem(itemID, catID, allocMoney, spentMoney)
+			items = append(items, item)
+		}
+		itemRows.Close()
+
+		if err = itemRows.Err(); err != nil {
+			return nil, err
+		}
+
+		budget := domain.LoadBudget(id, ownerId, period, totalLimit, items)
+		budgets = append(budgets, &budget)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return budgets, nil
+}

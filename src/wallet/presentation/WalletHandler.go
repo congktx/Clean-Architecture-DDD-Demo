@@ -17,6 +17,15 @@ func NewWalletHandler(u usecase.WalletUsecase) *WalletHandler {
 	return &WalletHandler{walletUsecase: u}
 }
 
+func writeJSONResponse(w http.ResponseWriter, status int, message string, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": message,
+		"data":    data,
+	})
+}
+
 type CreateWalletRequest struct {
 	OwnerID  string `json:"owner_id"`
 	Name     string `json:"name"`
@@ -35,7 +44,7 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.walletUsecase.CreateWallet(usecase.CreateWalletRequest{
+	res, err := h.walletUsecase.CreateWallet(usecase.CreateWalletRequest{
 		OwnerID:  req.OwnerID,
 		Name:     req.Name,
 		Currency: req.Currency,
@@ -46,8 +55,7 @@ func (h *WalletHandler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(`{"message": "Wallet created successfully"}`))
+	writeJSONResponse(w, http.StatusCreated, "Wallet created successfully", res)
 }
 
 type RecordExpenseRequest struct {
@@ -76,7 +84,7 @@ func (h *WalletHandler) RecordExpense(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.walletUsecase.RecordExpense(usecase.RecordExpenseRequest{
+	res, err := h.walletUsecase.RecordExpense(usecase.RecordExpenseRequest{
 		WalletID:    req.WalletID,
 		CategoryID:  req.CategoryID,
 		Amount:      amount,
@@ -90,8 +98,7 @@ func (h *WalletHandler) RecordExpense(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message": "Expense recorded successfully"}`))
+	writeJSONResponse(w, http.StatusOK, "Expense recorded successfully", res)
 }
 
 type RecordIncomeRequest struct {
@@ -120,7 +127,7 @@ func (h *WalletHandler) RecordIncome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.walletUsecase.RecordIncome(usecase.RecordIncomeRequest{
+	res, err := h.walletUsecase.RecordIncome(usecase.RecordIncomeRequest{
 		WalletID:    req.WalletID,
 		CategoryID:  req.CategoryID,
 		Amount:      amount,
@@ -134,6 +141,43 @@ func (h *WalletHandler) RecordIncome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message": "Income recorded successfully"}`))
+	writeJSONResponse(w, http.StatusOK, "Income recorded successfully", res)
+}
+
+func (h *WalletHandler) GetWallet(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	id := r.PathValue("id")
+	if id == "" {
+		http.Error(w, "Wallet ID is required", http.StatusBadRequest)
+		return
+	}
+
+	res, err := h.walletUsecase.GetWalletByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	writeJSONResponse(w, http.StatusOK, "Wallet retrieved successfully", res)
+}
+
+func (h *WalletHandler) GetWallets(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	ownerID := r.URL.Query().Get("owner_id")
+	if ownerID == "" {
+		http.Error(w, "owner_id query parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	res, err := h.walletUsecase.GetWalletsByOwnerID(ownerID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	writeJSONResponse(w, http.StatusOK, "Wallets retrieved successfully", res)
 }
